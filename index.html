@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prom Party</title>
+    <style>
+        body {
+            background-color: black;
+            color: white; 
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .container {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            padding-bottom: 50px;
+        }
+        
+        .title {
+            max-width: 100%;
+            margin-top: 40px;
+        }
+        
+        #main-image {
+            max-width: 100%;
+            height: auto;
+        }
+
+
+        
+        .star {
+            width: 100%;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: transform 0.6s;
+        }
+        
+        .star.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .extra-image {
+            max-width: 100%;
+            margin-top: 20px;
+            margin-bottom: 50px;
+        }
+
+        .LP {
+            width: 80%;
+            margin-top: 20px;
+            margin-bottom: 50px;
+            animation: spin 10s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .countdown-container {
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 90%;
+            box-shadow: 0 0 15px rgba(255, 105, 180, 0.5);
+        }
+        
+        .countdown-title {
+            font-family: 'Arial', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #ff69b4;
+            text-shadow: 0 0 5px rgba(255, 105, 180, 0.8);
+        }
+        
+        .countdown-time {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .countdown-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 10px;
+            min-width: 60px;
+        }
+        
+        .countdown-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff69b4, #e6b926);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
+        }
+        
+        .countdown-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 5px;
+        }
+        
+        .disco-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 5;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+        
+        .disco-overlay.active {
+            opacity: 1;
+        }
+        
+        .disco-light {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(15px);
+            mix-blend-mode: screen;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.7;
+            transition: opacity 0.5s;
+        }
+        
+        .disco-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 70px;
+            height: 70px;
+            background: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: transform 0.2s ease;
+        }
+
+        .disco-button img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .disco-button.clicked {
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="disco-overlay" id="disco-overlay"></div>
+    
+    <div class="container">
+        <img id="title-image" src="tittle.png" alt="Title" class="title">
+        <img id="main-image" src="proto.png" alt="proto">
+        
+        <img id="star" src="star.png" alt="Star" class="star">
+        
+        <div class="countdown-container">
+            <div class="countdown-title">Pro(m)toNight 까지</div>
+            <div class="countdown-time">
+                <div class="countdown-unit">
+                    <div id="countdown-days" class="countdown-value">00</div>
+                    <div class="countdown-label">일</div>
+                </div>
+                <div class="countdown-unit">
+                    <div id="countdown-hours" class="countdown-value">00</div>
+                    <div class="countdown-label">시간</div>
+                </div>
+                <div class="countdown-unit">
+                    <div id="countdown-minutes" class="countdown-value">00</div>
+                    <div class="countdown-label">분</div>
+                </div>
+                <div class="countdown-unit">
+                    <div id="countdown-seconds" class="countdown-value">00</div>
+                    <div class="countdown-label">초</div>
+                </div>
+            </div>
+        </div>
+        
+        <img id="invite-image" src="invite.png" alt="Invite" class="extra-image">
+        <img id="timetable-image" src="timetable.png" alt="Timetable" class="extra-image">
+        <img id="LP" src="lp.png" alt="LP" class="LP">
+    </div>
+    
+    <div class="disco-button" id="disco-button">
+        <img src="mirrorball.png" alt="Disco Button">
+    </div>
+      
+    <script>
+        const mainImage = document.getElementById('main-image');
+        const images = [];
+        for (let i = 1; i <= 16; i++) {
+            images.push(`${i}.png`);
+        }
+
+        setTimeout(() => {
+            setInterval(() => {
+                const randomIndex = Math.floor(Math.random() * images.length);
+                mainImage.src = images[randomIndex];
+            }, 500); 
+        }, 500);
+        
+        // 카운트다운 타이머 설정
+        const countdownDate = new Date('May 2, 2025 19:00:00').getTime();
+        const countdownDays = document.getElementById('countdown-days');
+        const countdownHours = document.getElementById('countdown-hours');
+        const countdownMinutes = document.getElementById('countdown-minutes');
+        const countdownSeconds = document.getElementById('countdown-seconds');
+        
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = countdownDate - now;
+            
+            if (distance < 0) {
+                // 카운트다운이 끝났을 때
+                countdownDays.textContent = '00';
+                countdownHours.textContent = '00';
+                countdownMinutes.textContent = '00';
+                countdownSeconds.textContent = '00';
+                return;
+            }
+            
+            // 시간 계산
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            // 표시 업데이트
+            countdownDays.textContent = days < 10 ? '0' + days : days;
+            countdownHours.textContent = hours < 10 ? '0' + hours : hours;
+            countdownMinutes.textContent = minutes < 10 ? '0' + minutes : minutes;
+            countdownSeconds.textContent = seconds < 10 ? '0' + seconds : seconds;
+        }
+        
+        // 초기 업데이트
+        updateCountdown();
+        
+        // 1초마다 업데이트
+        setInterval(updateCountdown, 1000);
+        
+        const star = document.getElementById('star');
+        let isFrontSide = true;
+        star.addEventListener('click', () => {
+            star.classList.toggle('flipped');
+            setTimeout(() => {
+                // 별이 중간 정도 뒤집어졌을 때 이미지 변경
+                if (isFrontSide) {
+                    star.src = 'BACK.png';
+                } else {
+                    star.src = 'star.png';
+                }
+                isFrontSide = !isFrontSide;
+            }, 300); // 애니메이션 중간 시점에 이미지 변경
+        });
+        
+        const discoOverlay = document.getElementById('disco-overlay');
+        const discoButton = document.getElementById('disco-button');
+        const colors = [
+            'rgba(255, 172, 252, 0.5)',
+            'rgba(241, 72, 251, 0.5)',
+            'rgba(113, 34, 250, 0.5)',
+            'rgba(86, 10, 134, 0.5)',
+            'rgba(253, 242, 0, 0.5)',
+            'rgba(0, 254, 202, 0.5)',
+            'rgba(169, 146, 250, 0.5)',
+        ];
+        
+        let discoActive = false;
+        let discoLights = [];
+        let lightAnimations = [];
+        let lightInterval;
+        
+        discoButton.addEventListener('click', toggleDisco);
+        
+        function toggleDisco(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            discoButton.classList.add('clicked');
+            setTimeout(() => {
+                discoButton.classList.remove('clicked');
+            }, 200);
+
+            if (!discoActive) {
+                discoOverlay.classList.add('active');
+                discoActive = true;
+                createDiscoLights();
+                setTimeout(() => {
+                    if (discoActive) {
+                        discoOverlay.classList.remove('active');
+                        discoActive = false;
+                        removeDiscoLights();
+                    }
+                }, 50000); // 빛 지속시간 50초로 늘림 (기존 30초에서 변경)
+            } else {
+                discoOverlay.classList.remove('active');
+                discoActive = false;
+                removeDiscoLights();
+            }
+        }
+        
+        function createDiscoLights() {
+            removeDiscoLights();
+            const numLights = Math.floor(Math.random() * 6) + 45;
+            
+            for (let i = 0; i < numLights; i++) {
+                setTimeout(() => {
+                    if (discoActive) {
+                        createSingleLight();
+                    }
+                }, i * 150);
+            }
+            
+            lightInterval = setInterval(() => {
+                if (discoActive) {
+                    if (discoLights.length < 7) {
+                        createSingleLight();
+                    } else if (discoLights.length < 40) {
+                        if (Math.random() < 0.3) {
+                            createSingleLight();
+                        }
+                    }
+                } else {
+                    clearInterval(lightInterval);
+                }
+            }, 800);
+        }
+        
+        function createSingleLight() {
+            const light = document.createElement('div');
+            light.className = 'disco-light';
+            const size = Math.floor(Math.random() * 150) + 20;
+            const colorIdx = Math.floor(Math.random() * colors.length);
+            
+            light.style.width = `${size}px`;
+            light.style.height = `${size}px`;
+            light.style.backgroundColor = colors[colorIdx];
+            
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const startX = Math.random() * viewportWidth;
+            const startY = Math.random() * viewportHeight + window.scrollY;
+            
+            light.style.left = `${startX}px`;
+            light.style.top = `${startY}px`;
+            
+            discoOverlay.appendChild(light);
+            discoLights.push(light);
+            animateLight(light, startX, startY);
+        }
+        
+        function animateLight(light, startX, startY) {
+            const speedX = (Math.random() - 0.5) * 0.5;
+            const speedY = (Math.random() - 0.5) * 0.5;
+            
+            let x = startX;
+            let y = startY;
+            let scale = 1;
+            let scaleDirection = Math.random() > 0.2 ? 0.002 : -0.002;
+            
+            const animate = () => {
+                if (!discoActive || !light.parentNode) return;
+                
+                x += speedX;
+                y += speedY;
+                
+                scale += scaleDirection;
+                if (scale > 1.0 || scale < 0.9) {
+                    scaleDirection *= -1;
+                }
+                
+                light.style.transform = `translate(0, 0) scale(${scale})`;
+                light.style.left = `${x}px`;
+                light.style.top = `${y}px`;
+                
+                const animationId = requestAnimationFrame(animate);
+                lightAnimations.push(animationId);
+            };
+            
+            animate();
+        }
+        
+        function removeDiscoLights() {
+            lightAnimations.forEach(id => {
+                cancelAnimationFrame(id);
+            });
+            lightAnimations = [];
+            
+            discoLights.forEach(light => {
+                if (light.parentNode) {
+                    light.style.opacity = 0;
+                    setTimeout(() => {
+                        if (light.parentNode) {
+                            light.parentNode.removeChild(light);
+                        }
+                    }, 500);
+                }
+            });
+            
+            discoLights = [];
+            clearInterval(lightInterval);
+        }
+        
+        window.addEventListener('resize', () => {
+            if (discoActive) {
+                removeDiscoLights();
+                createDiscoLights();
+            }
+        });
+    </script>
+</body>
+</html>
