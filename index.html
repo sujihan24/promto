@@ -111,7 +111,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: 100vh;
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 5;
             pointer-events: none;
@@ -287,7 +287,7 @@
         let lightInterval;
         
         // 최대 디스코 원 개수 제한
-        const MAX_DISCO_LIGHTS = 9;
+        const MAX_DISCO_LIGHTS = 12;
         
         discoButton.addEventListener('click', toggleDisco);
         
@@ -321,7 +321,7 @@
         function createDiscoLights() {
             removeDiscoLights();
             // 초기 생성 개수를 최대 개수 제한으로 설정
-            const numLights = Math.min(Math.floor(Math.random() * 4) + 6, MAX_DISCO_LIGHTS);
+            const numLights = Math.min(Math.floor(Math.random() * 3) + 4, MAX_DISCO_LIGHTS);
             
             for (let i = 0; i < numLights; i++) {
                 setTimeout(() => {
@@ -337,6 +337,24 @@
                     if (discoLights.length < MAX_DISCO_LIGHTS && Math.random() < 0.3) {
                         createSingleLight();
                     }
+                    
+                    // 현재 보이는 빛들 확인하고 없애기
+                    discoLights.forEach((light, index) => {
+                        if (light && light.parentNode) {
+                            const rect = light.getBoundingClientRect();
+                            // 화면을 벗어난 빛 제거
+                            if (rect.bottom < 0 || rect.top > window.innerHeight || 
+                                rect.right < 0 || rect.left > window.innerWidth) {
+                                light.style.opacity = 0;
+                                setTimeout(() => {
+                                    if (light.parentNode) {
+                                        light.parentNode.removeChild(light);
+                                        discoLights.splice(discoLights.indexOf(light), 1);
+                                    }
+                                }, 500);
+                            }
+                        }
+                    });
                 } else {
                     clearInterval(lightInterval);
                 }
@@ -361,19 +379,15 @@
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
             const startX = Math.random() * viewportWidth;
+            // viewport 내에서 랜덤한 위치에 생성 (스크롤과 관계없이)
             const startY = Math.random() * viewportHeight;
             
             light.style.left = `${startX}px`;
+            // 위치 설정 시 현재 스크롤 위치를 더하지 않음 (고정된 위치)
             light.style.top = `${startY}px`;
             
             discoOverlay.appendChild(light);
             discoLights.push(light);
-            
-            // 각 빛에 대한 데이터 저장 (스크롤 위치 추적용)
-            light.discoData = {
-                initialScrollY: window.scrollY,
-                relativeY: startY
-            };
             
             animateLight(light, startX, startY);
         }
@@ -386,7 +400,6 @@
             let y = startY;
             let scale = 1;
             let scaleDirection = Math.random() > 0.2 ? 0.002 : -0.002;
-            const initialScrollY = light.discoData.initialScrollY;
             
             const animate = () => {
                 if (!discoActive || !light.parentNode) return;
@@ -394,17 +407,29 @@
                 x += speedX;
                 y += speedY;
                 
+                // 화면 영역 내에 유지
+                const maxX = window.innerWidth - parseInt(light.style.width);
+                const maxY = window.innerHeight - parseInt(light.style.height);
+                
+                // 화면 경계에 닿으면 반대 방향으로
+                if (x <= 0 || x >= maxX) {
+                    x = Math.max(0, Math.min(x, maxX));
+                    x -= speedX * 2; // 방향 전환
+                }
+                
+                if (y <= 0 || y >= maxY) {
+                    y = Math.max(0, Math.min(y, maxY));
+                    y -= speedY * 2; // 방향 전환
+                }
+                
                 scale += scaleDirection;
                 if (scale > 1.0 || scale < 0.9) {
                     scaleDirection *= -1;
                 }
                 
-                light.style.transform = `translate(0, 0) scale(${scale})`;
+                light.style.transform = `scale(${scale})`;
                 light.style.left = `${x}px`;
-                
-                // 스크롤 변화에 따라 위치 조정
-                const scrollDiff = window.scrollY - initialScrollY;
-                light.style.top = `${y + scrollDiff}px`;
+                light.style.top = `${y}px`;
                 
                 const animationId = requestAnimationFrame(animate);
                 lightAnimations.push(animationId);
@@ -437,8 +462,27 @@
         // 스크롤 이벤트 리스너 추가
         window.addEventListener('scroll', () => {
             if (discoActive) {
-                // 스크롤 시 모든 디스코 라이트 위치 재조정은 생략
-                // animateLight 함수 내에서 스크롤 차이를 고려하여 처리
+                // 스크롤 시 랜덤하게 새로운 디스코 빛 생성 (30% 확률)
+                if (Math.random() < 0.3 && discoLights.length < MAX_DISCO_LIGHTS) {
+                    createSingleLight();
+                }
+                
+                // 화면 밖으로 나간 디스코 빛 제거
+                discoLights.forEach((light, index) => {
+                    if (light.parentNode) {
+                        const rect = light.getBoundingClientRect();
+                        if (rect.bottom < 0 || rect.top > window.innerHeight || 
+                            rect.right < 0 || rect.left > window.innerWidth) {
+                            light.style.opacity = 0;
+                            setTimeout(() => {
+                                if (light.parentNode) {
+                                    light.parentNode.removeChild(light);
+                                    discoLights.splice(index, 1);
+                                }
+                            }, 500);
+                        }
+                    }
+                });
             }
         });
         
