@@ -128,7 +128,7 @@
         .disco-light {
             position: fixed;
             border-radius: 50%;
-            filter: blur(15px);
+            filter: blur(7px);
             mix-blend-mode: screen;
             pointer-events: none;
             z-index: 10;
@@ -319,7 +319,7 @@
         
         function createDiscoLights() {
             removeDiscoLights();
-            const numLights = Math.floor(Math.random() * 6) + 45;
+            const numLights = Math.floor(Math.random() * 6) + 30;
             
             for (let i = 0; i < numLights; i++) {
                 setTimeout(() => {
