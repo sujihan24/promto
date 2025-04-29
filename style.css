@@ -1,0 +1,51 @@
+body {
+    background-color: black;
+    color: white; 
+  margin: 0;
+  padding: 0;
+  justify-content: center;
+  align-items: center;
+  }
+  
+  .container {
+    text-align: center;
+  }
+  .title {
+    max-width: 100%;
+    margin-top: 40px; /* 제목 아래 살짝 띄우기 */
+  }
+  #main-image {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .star {
+    width: 100%;
+    margin-top: 15px;
+    cursor: pointer;
+    transition: transform 0.6s;
+  }
+  .extra-image {
+    max-width: 100%;
+    margin-top: 20px;
+    margin-bottom: 50px;
+  }
+
+  .LP {
+    width: 80%;
+    margin-top: 20px;
+    margin-bottom: 50px;
+    animation: spin 10s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .star.flipped {
+    transform: rotateY(180deg);
+  }
