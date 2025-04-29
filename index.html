@@ -29,8 +29,6 @@
             max-width: 100%;
             height: auto;
         }
-
-
         
         .star {
             width: 100%;
@@ -288,6 +286,9 @@
         let lightAnimations = [];
         let lightInterval;
         
+        // 최대 디스코 원 개수 제한
+        const MAX_DISCO_LIGHTS = 9;
+        
         discoButton.addEventListener('click', toggleDisco);
         
         function toggleDisco(e) {
@@ -309,7 +310,7 @@
                         discoActive = false;
                         removeDiscoLights();
                     }
-                }, 50000); // 빛 지속시간 50초로 늘림 (기존 30초에서 변경)
+                }, 50000); // 빛 지속시간 50초
             } else {
                 discoOverlay.classList.remove('active');
                 discoActive = false;
@@ -319,11 +320,12 @@
         
         function createDiscoLights() {
             removeDiscoLights();
-            const numLights = Math.floor(Math.random() * 6) + 30;
+            // 초기 생성 개수를 최대 개수 제한으로 설정
+            const numLights = Math.min(Math.floor(Math.random() * 4) + 6, MAX_DISCO_LIGHTS);
             
             for (let i = 0; i < numLights; i++) {
                 setTimeout(() => {
-                    if (discoActive) {
+                    if (discoActive && discoLights.length < MAX_DISCO_LIGHTS) {
                         createSingleLight();
                     }
                 }, i * 150);
@@ -331,12 +333,9 @@
             
             lightInterval = setInterval(() => {
                 if (discoActive) {
-                    if (discoLights.length < 7) {
+                    // 최대 개수보다 적으면 가끔 새로운 빛 생성
+                    if (discoLights.length < MAX_DISCO_LIGHTS && Math.random() < 0.3) {
                         createSingleLight();
-                    } else if (discoLights.length < 40) {
-                        if (Math.random() < 0.3) {
-                            createSingleLight();
-                        }
                     }
                 } else {
                     clearInterval(lightInterval);
@@ -345,6 +344,11 @@
         }
         
         function createSingleLight() {
+            // 최대 개수 체크
+            if (discoLights.length >= MAX_DISCO_LIGHTS) {
+                return;
+            }
+            
             const light = document.createElement('div');
             light.className = 'disco-light';
             const size = Math.floor(Math.random() * 150) + 20;
@@ -357,13 +361,20 @@
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
             const startX = Math.random() * viewportWidth;
-            const startY = Math.random() * viewportHeight + window.scrollY;
+            const startY = Math.random() * viewportHeight;
             
             light.style.left = `${startX}px`;
             light.style.top = `${startY}px`;
             
             discoOverlay.appendChild(light);
             discoLights.push(light);
+            
+            // 각 빛에 대한 데이터 저장 (스크롤 위치 추적용)
+            light.discoData = {
+                initialScrollY: window.scrollY,
+                relativeY: startY
+            };
+            
             animateLight(light, startX, startY);
         }
         
@@ -375,6 +386,7 @@
             let y = startY;
             let scale = 1;
             let scaleDirection = Math.random() > 0.2 ? 0.002 : -0.002;
+            const initialScrollY = light.discoData.initialScrollY;
             
             const animate = () => {
                 if (!discoActive || !light.parentNode) return;
@@ -389,7 +401,10 @@
                 
                 light.style.transform = `translate(0, 0) scale(${scale})`;
                 light.style.left = `${x}px`;
-                light.style.top = `${y}px`;
+                
+                // 스크롤 변화에 따라 위치 조정
+                const scrollDiff = window.scrollY - initialScrollY;
+                light.style.top = `${y + scrollDiff}px`;
                 
                 const animationId = requestAnimationFrame(animate);
                 lightAnimations.push(animationId);
@@ -418,6 +433,14 @@
             discoLights = [];
             clearInterval(lightInterval);
         }
+        
+        // 스크롤 이벤트 리스너 추가
+        window.addEventListener('scroll', () => {
+            if (discoActive) {
+                // 스크롤 시 모든 디스코 라이트 위치 재조정은 생략
+                // animateLight 함수 내에서 스크롤 차이를 고려하여 처리
+            }
+        });
         
         window.addEventListener('resize', () => {
             if (discoActive) {
