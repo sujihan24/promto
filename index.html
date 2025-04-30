@@ -30,11 +30,18 @@
             height: auto;
         }
         
-        .star {
+        .star-container {
+            perspective: 1000px;
             width: 100%;
             margin-top: 15px;
+            position: relative;
+        }
+        
+        .star {
+            width: 100%;
             cursor: pointer;
             transition: transform 0.6s;
+            transform-style: preserve-3d;
         }
         
         .star.flipped {
@@ -168,7 +175,9 @@
         <img id="title-image" src="tittle.png" alt="Title" class="title">
         <img id="main-image" src="proto.png" alt="proto">
         
-        <img id="star" src="star.png" alt="Star" class="star">
+        <div class="star-container">
+            <img id="star" src="star.png" alt="Star" class="star">
+        </div>
         
         <div class="countdown-container">
             <div class="countdown-title">Pro(m)toNight 까지</div>
@@ -200,6 +209,9 @@
     <div class="disco-button" id="disco-button">
         <img src="mirrorball.png" alt="Disco Button">
     </div>
+    
+    <!-- Add audio element -->
+    <audio id="songAudio" src="Charli xcx - 365 (official lyric video).mp3" preload="auto"></audio>
       
     <script>
         const mainImage = document.getElementById('main-image');
@@ -254,16 +266,31 @@
         // 1초마다 업데이트
         setInterval(updateCountdown, 1000);
         
+        // Audio element 참조
+        const songAudio = document.getElementById('songAudio');
+        
         const star = document.getElementById('star');
         let isFrontSide = true;
+        let isPlaying = false;
+        
         star.addEventListener('click', () => {
+            // 3D 뒤집기 효과 추가
             star.classList.toggle('flipped');
+            
             setTimeout(() => {
-                // 별이 중간 정도 뒤집어졌을 때 이미지 변경
                 if (isFrontSide) {
-                    star.src = 'BACK.png';
+                    star.src = 'brat_star.png';
+                    // 음악 재생
+                    songAudio.play().catch(e => {
+                        console.log("Audio play failed:", e);
+                    });
+                    isPlaying = true;
                 } else {
                     star.src = 'star.png';
+                    // 음악 정지
+                    songAudio.pause();
+                    songAudio.currentTime = 0;
+                    isPlaying = false;
                 }
                 isFrontSide = !isFrontSide;
             }, 300); // 애니메이션 중간 시점에 이미지 변경
