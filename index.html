@@ -281,6 +281,7 @@
                 if (isFrontSide) {
                     star.src = 'brat_star.png';
                     // 음악 재생
+                    songAudio.currentTime = 4; // Set to 3 seconds
                     songAudio.play().catch(e => {
                         console.log("Audio play failed:", e);
                     });
@@ -291,7 +292,10 @@
                     songAudio.pause();
                     songAudio.currentTime = 0;
                     isPlaying = false;
-                }
+
+                   
+                } 
+               
                 isFrontSide = !isFrontSide;
             }, 300); // 애니메이션 중간 시점에 이미지 변경
         });
